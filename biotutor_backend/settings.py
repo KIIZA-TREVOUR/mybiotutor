@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'content.apps.ContentConfig',
     'assessments.apps.AssessmentsConfig',
     'ai_tutor.apps.AiTutorConfig',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
