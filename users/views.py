@@ -177,9 +177,16 @@ class SchoolAdminCreateView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [IsSuperAdmin]
     
-    def perform_create(self, serializer):
-        # Force role to be SCHOOL_ADMIN
-        serializer.save(role='SCHOOL_ADMIN')
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        data['role'] = 'SCHOOL_ADMIN'
+        
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 @extend_schema(
@@ -252,12 +259,18 @@ class TeacherCreateView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [IsSchoolAdmin]
     
-    def perform_create(self, serializer):
-        # Force role to be TEACHER and assign to school admin's school
-        serializer.save(
-            role='TEACHER',
-            school=self.request.user.school
-        )
+    def create(self, request, *args, **kwargs):
+        # Add role and school to request data
+        data = request.data.copy()
+        data['role'] = 'TEACHER'
+        data['school'] = request.user.school.id
+        
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 @extend_schema(
@@ -289,13 +302,18 @@ class StudentCreateView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [IsSchoolAdmin]
     
-    def perform_create(self, serializer):
-        # Force role to be STUDENT and assign to school admin's school
-        serializer.save(
-            role='STUDENT',
-            school=self.request.user.school
-        )
-
+    def create(self, request, *args, **kwargs):
+        data = request.data.copy()
+        data['role'] = 'STUDENT'
+        data['school'] = request.user.school.id
+        
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
 
 @extend_schema(
     tags=['School Admin - Student Management']
